@@ -1,0 +1,1141 @@
+2022-05-26 17:16:01,226 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.12 (default, Oct 12 2021, 13:49:34) [GCC 7.5.0]
+CUDA available: True
+GPU 0,1,2,3,4,5,6,7: GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda
+NVCC: Cuda compilation tools, release 11.1, V11.1.74
+GCC: gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-44)
+PyTorch: 1.8.2+cu111
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.3-Product Build 20210617 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.7.0 (Git Hash 7aed236906b1f7a05c0917e5257a1af05e9ff683)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.1
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.0.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.1, CUDNN_VERSION=8.0.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.8.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.9.2+cu111
+OpenCV: 4.5.4-dev
+MMCV: 1.5.0
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.1
+MMDetection: 2.24.1+240d7a3
+------------------------------------------------------------
+
+2022-05-26 17:16:01,498 - mmdet - INFO - Distributed training: True
+2022-05-26 17:16:01,750 - mmdet - INFO - Config:
+optimizer = dict(
+    type='SGD',
+    lr=0.01,
+    momentum=0.9,
+    weight_decay=0.0005,
+    nesterov=True,
+    paramwise_cfg=dict(norm_decay_mult=0.0, bias_decay_mult=0.0))
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(
+    policy='YOLOX',
+    warmup='exp',
+    by_epoch=False,
+    warmup_by_epoch=True,
+    warmup_ratio=1,
+    warmup_iters=5,
+    num_last_epochs=15,
+    min_lr_ratio=0.05)
+runner = dict(type='EpochBasedRunner', max_epochs=300)
+checkpoint_config = dict(interval=10)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [
+    dict(type='YOLOXModeSwitchHook', num_last_epochs=15, priority=48),
+    dict(type='SyncNormHook', num_last_epochs=15, interval=10, priority=48),
+    dict(
+        type='ExpMomentumEMAHook',
+        resume_from=None,
+        momentum=0.0001,
+        priority=49)
+]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = None
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=64)
+img_scale = (640, 640)
+model = dict(
+    type='YOLOXSingle',
+    input_size=(640, 640),
+    random_size_range=(15, 25),
+    random_size_interval=10,
+    backbone=dict(type='CSPDarknet', deepen_factor=0.33, widen_factor=0.5),
+    neck=dict(
+        type='YOLOXPAFPN',
+        in_channels=[128, 256, 512],
+        out_channels=128,
+        num_csp_blocks=1),
+    bbox_head=dict(
+        type='YOLOXHead', num_classes=80, in_channels=128, feat_channels=128),
+    train_cfg=dict(assigner=dict(type='SimOTAAssigner', center_radius=2.5)),
+    test_cfg=dict(score_thr=0.01, nms=dict(type='nms', iou_threshold=0.65)))
+data_root = 'data/Data/csv/coco/'
+dataset_type = 'CocoSmokeDataset'
+train_pipeline = [
+    dict(type='Mosaic', img_scale=(640, 640), pad_val=114.0),
+    dict(
+        type='RandomAffine', scaling_ratio_range=(0.1, 2),
+        border=(-320, -320)),
+    dict(
+        type='MixUp',
+        img_scale=(640, 640),
+        ratio_range=(0.8, 1.6),
+        pad_val=114.0),
+    dict(type='YOLOXHSVRandomAug'),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='Resize', img_scale=(640, 640), keep_ratio=True),
+    dict(
+        type='Pad',
+        pad_to_square=True,
+        pad_val=dict(img=(114.0, 114.0, 114.0))),
+    dict(type='FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+train_dataset = dict(
+    type='MultiImageMixDataset',
+    dataset=dict(
+        type='CocoSmokeDataset',
+        ann_file='data/Data/csv/coco/annotations/instances_train2017.json',
+        img_prefix='data/Data/csv/coco/images/train2017/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True)
+        ],
+        filter_empty_gt=False),
+    pipeline=[
+        dict(type='Mosaic', img_scale=(640, 640), pad_val=114.0),
+        dict(
+            type='RandomAffine',
+            scaling_ratio_range=(0.1, 2),
+            border=(-320, -320)),
+        dict(
+            type='MixUp',
+            img_scale=(640, 640),
+            ratio_range=(0.8, 1.6),
+            pad_val=114.0),
+        dict(type='YOLOXHSVRandomAug'),
+        dict(type='RandomFlip', flip_ratio=0.5),
+        dict(type='Resize', img_scale=(640, 640), keep_ratio=True),
+        dict(
+            type='Pad',
+            pad_to_square=True,
+            pad_val=dict(img=(114.0, 114.0, 114.0))),
+        dict(
+            type='FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
+        dict(type='DefaultFormatBundle'),
+        dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+    ])
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(640, 640),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Pad',
+                pad_to_square=True,
+                pad_val=dict(img=(114.0, 114.0, 114.0))),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=8,
+    workers_per_gpu=4,
+    persistent_workers=True,
+    train=dict(
+        type='MultiImageMixDataset',
+        dataset=dict(
+            type='CocoSmokeDataset',
+            ann_file='data/Data/csv/coco/annotations/instances_train2017.json',
+            img_prefix='data/Data/csv/coco/images/train2017/',
+            pipeline=[
+                dict(type='LoadImageFromFile'),
+                dict(type='LoadAnnotations', with_bbox=True)
+            ],
+            filter_empty_gt=False),
+        pipeline=[
+            dict(type='Mosaic', img_scale=(640, 640), pad_val=114.0),
+            dict(
+                type='RandomAffine',
+                scaling_ratio_range=(0.1, 2),
+                border=(-320, -320)),
+            dict(
+                type='MixUp',
+                img_scale=(640, 640),
+                ratio_range=(0.8, 1.6),
+                pad_val=114.0),
+            dict(type='YOLOXHSVRandomAug'),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(type='Resize', img_scale=(640, 640), keep_ratio=True),
+            dict(
+                type='Pad',
+                pad_to_square=True,
+                pad_val=dict(img=(114.0, 114.0, 114.0))),
+            dict(
+                type='FilterAnnotations',
+                min_gt_bbox_wh=(1, 1),
+                keep_empty=False),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ]),
+    val=dict(
+        type='CocoSmokeDataset',
+        ann_file='data/Data/csv/coco/annotations/instances_val2017.json',
+        img_prefix='data/Data/csv/coco/images/val2017/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(640, 640),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Pad',
+                        pad_to_square=True,
+                        pad_val=dict(img=(114.0, 114.0, 114.0))),
+                    dict(type='DefaultFormatBundle'),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='CocoSmokeDataset',
+        ann_file='data/Data/csv/coco/annotations/instances_val2017.json',
+        img_prefix='data/Data/csv/coco/images/val2017/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(640, 640),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Pad',
+                        pad_to_square=True,
+                        pad_val=dict(img=(114.0, 114.0, 114.0))),
+                    dict(type='DefaultFormatBundle'),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+max_epochs = 300
+num_last_epochs = 15
+interval = 10
+evaluation = dict(
+    save_best='auto', interval=10, dynamic_intervals=[(285, 1)], metric='bbox')
+work_dir = './work_dirs/single/yolox_s_8x8_300e_coco.py'
+auto_resume = False
+gpu_ids = range(0, 8)
+
+2022-05-26 17:16:01,750 - mmdet - INFO - Set random seed to 0, deterministic: False
+2022-05-26 17:16:01,908 - mmdet - INFO - initialize CSPDarknet with init_cfg {'type': 'Kaiming', 'layer': 'Conv2d', 'a': 2.23606797749979, 'distribution': 'uniform', 'mode': 'fan_in', 'nonlinearity': 'leaky_relu'}
+2022-05-26 17:16:01,937 - mmdet - INFO - initialize YOLOXPAFPN with init_cfg {'type': 'Kaiming', 'layer': 'Conv2d', 'a': 2.23606797749979, 'distribution': 'uniform', 'mode': 'fan_in', 'nonlinearity': 'leaky_relu'}
+2022-05-26 17:16:01,958 - mmdet - INFO - initialize YOLOXHead with init_cfg {'type': 'Kaiming', 'layer': 'Conv2d', 'a': 2.23606797749979, 'distribution': 'uniform', 'mode': 'fan_in', 'nonlinearity': 'leaky_relu'}
+
+Initialized by user-defined `init_weights` in YOLOXHead  
+2022-05-26 17:16:24,802 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2022-05-26 17:16:24,825 - mmdet - INFO - Start running, host: ******@gpu05, work_dir: /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py
+2022-05-26 17:16:24,825 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) YOLOXLrUpdaterHook                 
+(49          ) ExpMomentumEMAHook                 
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) YOLOXLrUpdaterHook                 
+(48          ) YOLOXModeSwitchHook                
+(48          ) SyncNormHook                       
+(49          ) ExpMomentumEMAHook                 
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) YOLOXLrUpdaterHook                 
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(49          ) ExpMomentumEMAHook                 
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(48          ) SyncNormHook                       
+(49          ) ExpMomentumEMAHook                 
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2022-05-26 17:16:24,826 - mmdet - INFO - workflow: [('train', 1)], max: 300 epochs
+2022-05-26 17:16:24,845 - mmdet - INFO - Checkpoints will be saved to /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py by HardDiskBackend.
+2022-05-26 17:18:45,891 - mmdet - INFO - Saving checkpoint at 10 epochs
+2022-05-26 17:18:50,833 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:18:51,077 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.016
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.080
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.008
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.020
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.202
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.202
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.202
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.086
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.266
+
+2022-05-26 17:18:53,110 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_10.pth.
+2022-05-26 17:18:53,110 - mmdet - INFO - Best bbox_mAP is 0.0160 at 10 epoch.
+2022-05-26 17:18:53,112 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:18:53,112 - mmdet - INFO - Epoch(val) [10][8]	bbox_mAP: 0.0160, bbox_mAP_50: 0.0800, bbox_mAP_75: 0.0000, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.0080, bbox_mAP_l: 0.0200, bbox_mAP_copypaste: 0.016 0.080 0.000 -1.000 0.008 0.020
+2022-05-26 17:21:08,963 - mmdet - INFO - Saving checkpoint at 20 epochs
+2022-05-26 17:21:13,863 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:21:14,081 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.005
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.016
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.024
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.005
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.197
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.197
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.197
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.171
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.211
+
+2022-05-26 17:21:14,083 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:21:14,083 - mmdet - INFO - Epoch(val) [20][8]	bbox_mAP: 0.0050, bbox_mAP_50: 0.0160, bbox_mAP_75: 0.0010, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.0240, bbox_mAP_l: 0.0050, bbox_mAP_copypaste: 0.005 0.016 0.001 -1.000 0.024 0.005
+2022-05-26 17:23:27,792 - mmdet - INFO - Saving checkpoint at 30 epochs
+2022-05-26 17:23:33,056 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:23:33,180 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.039
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.110
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.035
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.062
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.151
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.151
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.151
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.076
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.192
+
+2022-05-26 17:23:33,258 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_10.pth was removed
+2022-05-26 17:23:35,584 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_30.pth.
+2022-05-26 17:23:35,585 - mmdet - INFO - Best bbox_mAP is 0.0390 at 30 epoch.
+2022-05-26 17:23:35,586 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:23:35,586 - mmdet - INFO - Epoch(val) [30][8]	bbox_mAP: 0.0390, bbox_mAP_50: 0.1100, bbox_mAP_75: 0.0350, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.0040, bbox_mAP_l: 0.0620, bbox_mAP_copypaste: 0.039 0.110 0.035 -1.000 0.004 0.062
+2022-05-26 17:25:47,543 - mmdet - INFO - Saving checkpoint at 40 epochs
+2022-05-26 17:25:52,455 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:25:52,523 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.223
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.510
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.128
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.232
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.228
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.449
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.449
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.449
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.443
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.453
+
+2022-05-26 17:25:52,591 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_30.pth was removed
+2022-05-26 17:25:54,574 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_40.pth.
+2022-05-26 17:25:54,574 - mmdet - INFO - Best bbox_mAP is 0.2230 at 40 epoch.
+2022-05-26 17:25:54,575 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:25:54,576 - mmdet - INFO - Epoch(val) [40][8]	bbox_mAP: 0.2230, bbox_mAP_50: 0.5100, bbox_mAP_75: 0.1280, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.2320, bbox_mAP_l: 0.2280, bbox_mAP_copypaste: 0.223 0.510 0.128 -1.000 0.232 0.228
+2022-05-26 17:28:07,390 - mmdet - INFO - Saving checkpoint at 50 epochs
+2022-05-26 17:28:13,023 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:28:13,147 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.179
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.525
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.123
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.218
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.172
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.407
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.407
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.407
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.448
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.384
+
+2022-05-26 17:28:13,149 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:28:13,149 - mmdet - INFO - Epoch(val) [50][8]	bbox_mAP: 0.1790, bbox_mAP_50: 0.5250, bbox_mAP_75: 0.1230, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.2180, bbox_mAP_l: 0.1720, bbox_mAP_copypaste: 0.179 0.525 0.123 -1.000 0.218 0.172
+2022-05-26 17:30:25,968 - mmdet - INFO - Saving checkpoint at 60 epochs
+2022-05-26 17:30:31,164 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:30:31,198 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.097
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.248
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.078
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.074
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.115
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.268
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.268
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.268
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.229
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.289
+
+2022-05-26 17:30:31,200 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:30:31,200 - mmdet - INFO - Epoch(val) [60][8]	bbox_mAP: 0.0970, bbox_mAP_50: 0.2480, bbox_mAP_75: 0.0780, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.0740, bbox_mAP_l: 0.1150, bbox_mAP_copypaste: 0.097 0.248 0.078 -1.000 0.074 0.115
+2022-05-26 17:32:45,323 - mmdet - INFO - Saving checkpoint at 70 epochs
+2022-05-26 17:32:50,328 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:32:50,353 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.000
+
+2022-05-26 17:32:50,355 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:32:50,355 - mmdet - INFO - Epoch(val) [70][8]	bbox_mAP: 0.0000, bbox_mAP_50: 0.0000, bbox_mAP_75: 0.0000, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0000, bbox_mAP_copypaste: 0.000 0.000 0.000 -1.000 0.000 0.000
+2022-05-26 17:35:03,948 - mmdet - INFO - Saving checkpoint at 80 epochs
+2022-05-26 17:35:09,278 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:35:09,409 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.273
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.577
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.213
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.423
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.245
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.600
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.484
+
+2022-05-26 17:35:09,483 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_40.pth was removed
+2022-05-26 17:35:11,460 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_80.pth.
+2022-05-26 17:35:11,461 - mmdet - INFO - Best bbox_mAP is 0.2730 at 80 epoch.
+2022-05-26 17:35:11,462 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:35:11,462 - mmdet - INFO - Epoch(val) [80][8]	bbox_mAP: 0.2730, bbox_mAP_50: 0.5770, bbox_mAP_75: 0.2130, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4230, bbox_mAP_l: 0.2450, bbox_mAP_copypaste: 0.273 0.577 0.213 -1.000 0.423 0.245
+2022-05-26 17:37:23,019 - mmdet - INFO - Saving checkpoint at 90 epochs
+2022-05-26 17:37:28,242 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:37:28,361 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.138
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.312
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.120
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.173
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.153
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.405
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.405
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.405
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.400
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.408
+
+2022-05-26 17:37:28,363 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:37:28,364 - mmdet - INFO - Epoch(val) [90][8]	bbox_mAP: 0.1380, bbox_mAP_50: 0.3120, bbox_mAP_75: 0.1200, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.1730, bbox_mAP_l: 0.1530, bbox_mAP_copypaste: 0.138 0.312 0.120 -1.000 0.173 0.153
+2022-05-26 17:39:41,426 - mmdet - INFO - Saving checkpoint at 100 epochs
+2022-05-26 17:39:47,094 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:39:47,242 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.300
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.578
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.300
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.318
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.313
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.492
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.492
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.492
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.462
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.508
+
+2022-05-26 17:39:47,299 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_80.pth was removed
+2022-05-26 17:39:49,545 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_100.pth.
+2022-05-26 17:39:49,546 - mmdet - INFO - Best bbox_mAP is 0.3000 at 100 epoch.
+2022-05-26 17:39:49,547 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:39:49,547 - mmdet - INFO - Epoch(val) [100][8]	bbox_mAP: 0.3000, bbox_mAP_50: 0.5780, bbox_mAP_75: 0.3000, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3180, bbox_mAP_l: 0.3130, bbox_mAP_copypaste: 0.300 0.578 0.300 -1.000 0.318 0.313
+2022-05-26 17:42:02,896 - mmdet - INFO - Saving checkpoint at 110 epochs
+2022-05-26 17:42:07,921 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:42:07,987 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.363
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.734
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.341
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.480
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.339
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.571
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.516
+
+2022-05-26 17:42:08,062 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_100.pth was removed
+2022-05-26 17:42:09,979 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_110.pth.
+2022-05-26 17:42:09,980 - mmdet - INFO - Best bbox_mAP is 0.3630 at 110 epoch.
+2022-05-26 17:42:09,981 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:42:09,981 - mmdet - INFO - Epoch(val) [110][8]	bbox_mAP: 0.3630, bbox_mAP_50: 0.7340, bbox_mAP_75: 0.3410, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4800, bbox_mAP_l: 0.3390, bbox_mAP_copypaste: 0.363 0.734 0.341 -1.000 0.480 0.339
+2022-05-26 17:44:22,633 - mmdet - INFO - Saving checkpoint at 120 epochs
+2022-05-26 17:44:28,242 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:44:28,358 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.183
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.336
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.182
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.330
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.163
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.461
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.461
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.461
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.481
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.450
+
+2022-05-26 17:44:28,360 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:44:28,360 - mmdet - INFO - Epoch(val) [120][8]	bbox_mAP: 0.1830, bbox_mAP_50: 0.3360, bbox_mAP_75: 0.1820, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3300, bbox_mAP_l: 0.1630, bbox_mAP_copypaste: 0.183 0.336 0.182 -1.000 0.330 0.163
+2022-05-26 17:46:40,461 - mmdet - INFO - Saving checkpoint at 130 epochs
+2022-05-26 17:46:45,731 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:46:45,849 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.341
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.666
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.269
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.369
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.337
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.519
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.526
+
+2022-05-26 17:46:45,851 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:46:45,851 - mmdet - INFO - Epoch(val) [130][8]	bbox_mAP: 0.3410, bbox_mAP_50: 0.6660, bbox_mAP_75: 0.2690, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3690, bbox_mAP_l: 0.3370, bbox_mAP_copypaste: 0.341 0.666 0.269 -1.000 0.369 0.337
+2022-05-26 17:48:59,160 - mmdet - INFO - Saving checkpoint at 140 epochs
+2022-05-26 17:49:04,102 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:49:04,195 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.289
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.632
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.205
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.302
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.307
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.461
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.461
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.461
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.448
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.468
+
+2022-05-26 17:49:04,197 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:49:04,197 - mmdet - INFO - Epoch(val) [140][8]	bbox_mAP: 0.2890, bbox_mAP_50: 0.6320, bbox_mAP_75: 0.2050, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3020, bbox_mAP_l: 0.3070, bbox_mAP_copypaste: 0.289 0.632 0.205 -1.000 0.302 0.307
+2022-05-26 17:51:15,623 - mmdet - INFO - Saving checkpoint at 150 epochs
+2022-05-26 17:51:20,611 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:51:20,726 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.394
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.756
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.374
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.399
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.400
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.573
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.573
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.573
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.538
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.592
+
+2022-05-26 17:51:20,798 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_110.pth was removed
+2022-05-26 17:51:22,881 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_150.pth.
+2022-05-26 17:51:22,882 - mmdet - INFO - Best bbox_mAP is 0.3940 at 150 epoch.
+2022-05-26 17:51:22,883 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:51:22,883 - mmdet - INFO - Epoch(val) [150][8]	bbox_mAP: 0.3940, bbox_mAP_50: 0.7560, bbox_mAP_75: 0.3740, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3990, bbox_mAP_l: 0.4000, bbox_mAP_copypaste: 0.394 0.756 0.374 -1.000 0.399 0.400
+2022-05-26 17:53:34,321 - mmdet - INFO - Saving checkpoint at 160 epochs
+2022-05-26 17:53:39,631 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:53:39,720 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.264
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.566
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.196
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.309
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.249
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.417
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.417
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.417
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.467
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.389
+
+2022-05-26 17:53:39,722 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:53:39,722 - mmdet - INFO - Epoch(val) [160][8]	bbox_mAP: 0.2640, bbox_mAP_50: 0.5660, bbox_mAP_75: 0.1960, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3090, bbox_mAP_l: 0.2490, bbox_mAP_copypaste: 0.264 0.566 0.196 -1.000 0.309 0.249
+2022-05-26 17:55:51,283 - mmdet - INFO - Saving checkpoint at 170 epochs
+2022-05-26 17:55:56,186 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:55:56,274 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.283
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.547
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.251
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.403
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.235
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.505
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.505
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.505
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.548
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.482
+
+2022-05-26 17:55:56,276 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:55:56,276 - mmdet - INFO - Epoch(val) [170][8]	bbox_mAP: 0.2830, bbox_mAP_50: 0.5470, bbox_mAP_75: 0.2510, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4030, bbox_mAP_l: 0.2350, bbox_mAP_copypaste: 0.283 0.547 0.251 -1.000 0.403 0.235
+2022-05-26 17:58:08,070 - mmdet - INFO - Saving checkpoint at 180 epochs
+2022-05-26 17:58:13,081 - mmdet - INFO - Evaluating bbox...
+2022-05-26 17:58:13,139 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.406
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.691
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.431
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.400
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.424
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.544
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.544
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.544
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.533
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.550
+
+2022-05-26 17:58:13,214 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_150.pth was removed
+2022-05-26 17:58:15,194 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_180.pth.
+2022-05-26 17:58:15,195 - mmdet - INFO - Best bbox_mAP is 0.4060 at 180 epoch.
+2022-05-26 17:58:15,196 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 17:58:15,196 - mmdet - INFO - Epoch(val) [180][8]	bbox_mAP: 0.4060, bbox_mAP_50: 0.6910, bbox_mAP_75: 0.4310, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4000, bbox_mAP_l: 0.4240, bbox_mAP_copypaste: 0.406 0.691 0.431 -1.000 0.400 0.424
+2022-05-26 18:00:25,792 - mmdet - INFO - Saving checkpoint at 190 epochs
+2022-05-26 18:00:30,931 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:00:31,023 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.322
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.666
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.242
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.379
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.312
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.485
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.485
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.485
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.500
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.476
+
+2022-05-26 18:00:31,025 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:00:31,025 - mmdet - INFO - Epoch(val) [190][8]	bbox_mAP: 0.3220, bbox_mAP_50: 0.6660, bbox_mAP_75: 0.2420, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3790, bbox_mAP_l: 0.3120, bbox_mAP_copypaste: 0.322 0.666 0.242 -1.000 0.379 0.312
+2022-05-26 18:02:43,415 - mmdet - INFO - Saving checkpoint at 200 epochs
+2022-05-26 18:02:48,507 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:02:48,585 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.421
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.757
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.454
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.430
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.430
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.558
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.558
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.558
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.567
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.553
+
+2022-05-26 18:02:48,713 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_180.pth was removed
+2022-05-26 18:02:50,547 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_200.pth.
+2022-05-26 18:02:50,547 - mmdet - INFO - Best bbox_mAP is 0.4210 at 200 epoch.
+2022-05-26 18:02:50,548 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:02:50,548 - mmdet - INFO - Epoch(val) [200][8]	bbox_mAP: 0.4210, bbox_mAP_50: 0.7570, bbox_mAP_75: 0.4540, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4300, bbox_mAP_l: 0.4300, bbox_mAP_copypaste: 0.421 0.757 0.454 -1.000 0.430 0.430
+2022-05-26 18:05:03,877 - mmdet - INFO - Saving checkpoint at 210 epochs
+2022-05-26 18:05:09,733 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:05:09,825 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.410
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.760
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.414
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.411
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.420
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.551
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.551
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.551
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.557
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.547
+
+2022-05-26 18:05:09,826 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:05:09,826 - mmdet - INFO - Epoch(val) [210][8]	bbox_mAP: 0.4100, bbox_mAP_50: 0.7600, bbox_mAP_75: 0.4140, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4110, bbox_mAP_l: 0.4200, bbox_mAP_copypaste: 0.410 0.760 0.414 -1.000 0.411 0.420
+2022-05-26 18:07:22,809 - mmdet - INFO - Saving checkpoint at 220 epochs
+2022-05-26 18:07:27,729 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:07:27,805 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.390
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.712
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.362
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.452
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.375
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.557
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.524
+
+2022-05-26 18:07:27,806 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:07:27,806 - mmdet - INFO - Epoch(val) [220][8]	bbox_mAP: 0.3900, bbox_mAP_50: 0.7120, bbox_mAP_75: 0.3620, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4520, bbox_mAP_l: 0.3750, bbox_mAP_copypaste: 0.390 0.712 0.362 -1.000 0.452 0.375
+2022-05-26 18:09:40,542 - mmdet - INFO - Saving checkpoint at 230 epochs
+2022-05-26 18:09:45,769 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:09:45,867 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.424
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.755
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.461
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.456
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.426
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.576
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.553
+
+2022-05-26 18:09:45,940 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_200.pth was removed
+2022-05-26 18:09:47,837 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_230.pth.
+2022-05-26 18:09:47,837 - mmdet - INFO - Best bbox_mAP is 0.4240 at 230 epoch.
+2022-05-26 18:09:47,839 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:09:47,839 - mmdet - INFO - Epoch(val) [230][8]	bbox_mAP: 0.4240, bbox_mAP_50: 0.7550, bbox_mAP_75: 0.4610, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4560, bbox_mAP_l: 0.4260, bbox_mAP_copypaste: 0.424 0.755 0.461 -1.000 0.456 0.426
+2022-05-26 18:11:59,848 - mmdet - INFO - Saving checkpoint at 240 epochs
+2022-05-26 18:12:04,726 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:12:04,805 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.380
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.711
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.297
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.386
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.387
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.505
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.534
+
+2022-05-26 18:12:04,807 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:12:04,807 - mmdet - INFO - Epoch(val) [240][8]	bbox_mAP: 0.3800, bbox_mAP_50: 0.7110, bbox_mAP_75: 0.2970, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3860, bbox_mAP_l: 0.3870, bbox_mAP_copypaste: 0.380 0.711 0.297 -1.000 0.386 0.387
+2022-05-26 18:14:14,608 - mmdet - INFO - Saving checkpoint at 250 epochs
+2022-05-26 18:14:19,768 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:14:19,837 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.374
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.669
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.425
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.387
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.385
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.537
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.537
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.537
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.562
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.524
+
+2022-05-26 18:14:19,838 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:14:19,838 - mmdet - INFO - Epoch(val) [250][8]	bbox_mAP: 0.3740, bbox_mAP_50: 0.6690, bbox_mAP_75: 0.4250, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.3870, bbox_mAP_l: 0.3850, bbox_mAP_copypaste: 0.374 0.669 0.425 -1.000 0.387 0.385
+2022-05-26 18:16:28,659 - mmdet - INFO - Saving checkpoint at 260 epochs
+2022-05-26 18:16:33,656 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:16:33,761 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.420
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.738
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.506
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.430
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.435
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.566
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.566
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.566
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.552
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.574
+
+2022-05-26 18:16:33,763 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:16:33,763 - mmdet - INFO - Epoch(val) [260][8]	bbox_mAP: 0.4200, bbox_mAP_50: 0.7380, bbox_mAP_75: 0.5060, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4300, bbox_mAP_l: 0.4350, bbox_mAP_copypaste: 0.420 0.738 0.506 -1.000 0.430 0.435
+2022-05-26 18:18:44,293 - mmdet - INFO - Saving checkpoint at 270 epochs
+2022-05-26 18:18:49,640 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:18:49,738 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.399
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.727
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.371
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.409
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.411
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.536
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.514
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.547
+
+2022-05-26 18:18:49,740 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:18:49,740 - mmdet - INFO - Epoch(val) [270][8]	bbox_mAP: 0.3990, bbox_mAP_50: 0.7270, bbox_mAP_75: 0.3710, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4090, bbox_mAP_l: 0.4110, bbox_mAP_copypaste: 0.399 0.727 0.371 -1.000 0.409 0.411
+2022-05-26 18:20:58,937 - mmdet - INFO - Saving checkpoint at 280 epochs
+2022-05-26 18:21:04,074 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:21:04,174 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.422
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.750
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.367
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.413
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.443
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.558
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.558
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.558
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.576
+
+2022-05-26 18:21:04,176 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:21:04,176 - mmdet - INFO - Epoch(val) [280][8]	bbox_mAP: 0.4220, bbox_mAP_50: 0.7500, bbox_mAP_75: 0.3670, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.4130, bbox_mAP_l: 0.4430, bbox_mAP_copypaste: 0.422 0.750 0.367 -1.000 0.413 0.443
+2022-05-26 18:21:55,916 - mmdet - INFO - No mosaic and mixup aug now!
+2022-05-26 18:21:56,067 - mmdet - INFO - Add additional L1 loss now!
+2022-05-26 18:22:06,772 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:22:06,817 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.511
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.859
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.590
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.525
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.515
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.629
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.629
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.629
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.600
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.645
+
+2022-05-26 18:22:06,877 - mmdet - INFO - The previous best checkpoint /share/home/****/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_230.pth was removed
+2022-05-26 18:22:08,793 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_285.pth.
+2022-05-26 18:22:08,794 - mmdet - INFO - Best bbox_mAP is 0.5110 at 285 epoch.
+2022-05-26 18:22:08,795 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:22:08,795 - mmdet - INFO - Epoch(val) [285][8]	bbox_mAP: 0.5110, bbox_mAP_50: 0.8590, bbox_mAP_75: 0.5900, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.5250, bbox_mAP_l: 0.5150, bbox_mAP_copypaste: 0.511 0.859 0.590 -1.000 0.525 0.515
+2022-05-26 18:22:18,884 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:22:18,948 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.605
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.911
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.740
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.625
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.617
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.698
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.698
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.698
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.676
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.711
+
+2022-05-26 18:22:19,105 - mmdet - INFO - The previous best checkpoint /share/home/*******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_285.pth was removed
+2022-05-26 18:22:20,921 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_286.pth.
+2022-05-26 18:22:20,922 - mmdet - INFO - Best bbox_mAP is 0.6050 at 286 epoch.
+2022-05-26 18:22:20,923 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:22:20,923 - mmdet - INFO - Epoch(val) [286][8]	bbox_mAP: 0.6050, bbox_mAP_50: 0.9110, bbox_mAP_75: 0.7400, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6250, bbox_mAP_l: 0.6170, bbox_mAP_copypaste: 0.605 0.911 0.740 -1.000 0.625 0.617
+2022-05-26 18:22:31,356 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:22:31,426 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.619
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.916
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.798
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.644
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.627
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.717
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.717
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.717
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.681
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.737
+
+2022-05-26 18:22:31,510 - mmdet - INFO - The previous best checkpoint /share/home/*******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_286.pth was removed
+2022-05-26 18:22:33,339 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_287.pth.
+2022-05-26 18:22:33,340 - mmdet - INFO - Best bbox_mAP is 0.6190 at 287 epoch.
+2022-05-26 18:22:33,341 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:22:33,341 - mmdet - INFO - Epoch(val) [287][8]	bbox_mAP: 0.6190, bbox_mAP_50: 0.9160, bbox_mAP_75: 0.7980, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6440, bbox_mAP_l: 0.6270, bbox_mAP_copypaste: 0.619 0.916 0.798 -1.000 0.644 0.627
+2022-05-26 18:22:44,325 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:22:44,388 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.620
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.905
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.799
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.622
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.638
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.710
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.710
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.710
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.667
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.734
+
+2022-05-26 18:22:44,499 - mmdet - INFO - The previous best checkpoint /share/home/*******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_287.pth was removed
+2022-05-26 18:22:46,392 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_288.pth.
+2022-05-26 18:22:46,393 - mmdet - INFO - Best bbox_mAP is 0.6200 at 288 epoch.
+2022-05-26 18:22:46,394 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:22:46,394 - mmdet - INFO - Epoch(val) [288][8]	bbox_mAP: 0.6200, bbox_mAP_50: 0.9050, bbox_mAP_75: 0.7990, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6220, bbox_mAP_l: 0.6380, bbox_mAP_copypaste: 0.620 0.905 0.799 -1.000 0.622 0.638
+2022-05-26 18:22:56,553 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:22:56,593 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.616
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.919
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.791
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.645
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.629
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.698
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.698
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.698
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.690
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.703
+
+2022-05-26 18:22:56,594 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:22:56,594 - mmdet - INFO - Epoch(val) [289][8]	bbox_mAP: 0.6160, bbox_mAP_50: 0.9190, bbox_mAP_75: 0.7910, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6450, bbox_mAP_l: 0.6290, bbox_mAP_copypaste: 0.616 0.919 0.791 -1.000 0.645 0.629
+2022-05-26 18:23:03,484 - mmdet - INFO - Saving checkpoint at 290 epochs
+2022-05-26 18:23:08,553 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:23:08,600 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.631
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.915
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.793
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.635
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.641
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.707
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.707
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.707
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.690
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.716
+
+2022-05-26 18:23:08,679 - mmdet - INFO - The previous best checkpoint /share/home/******/CV/mmdet_dual_smoke/mmdetection/work_dirs/single/yolox_s_8x8_300e_coco.py/best_bbox_mAP_epoch_288.pth was removed
+2022-05-26 18:23:10,609 - mmdet - INFO - Now best checkpoint is saved as best_bbox_mAP_epoch_290.pth.
+2022-05-26 18:23:10,610 - mmdet - INFO - Best bbox_mAP is 0.6310 at 290 epoch.
+2022-05-26 18:23:10,611 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:23:10,611 - mmdet - INFO - Epoch(val) [290][8]	bbox_mAP: 0.6310, bbox_mAP_50: 0.9150, bbox_mAP_75: 0.7930, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6350, bbox_mAP_l: 0.6410, bbox_mAP_copypaste: 0.631 0.915 0.793 -1.000 0.635 0.641
+2022-05-26 18:23:20,496 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:23:20,560 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.620
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.905
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.708
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.595
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.644
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.703
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.703
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.703
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.662
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.726
+
+2022-05-26 18:23:20,562 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:23:20,562 - mmdet - INFO - Epoch(val) [291][8]	bbox_mAP: 0.6200, bbox_mAP_50: 0.9050, bbox_mAP_75: 0.7080, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.5950, bbox_mAP_l: 0.6440, bbox_mAP_copypaste: 0.620 0.905 0.708 -1.000 0.595 0.644
+2022-05-26 18:23:30,978 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:23:31,042 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.616
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.912
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.719
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.617
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.621
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.685
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.685
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.685
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.667
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.695
+
+2022-05-26 18:23:31,043 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:23:31,043 - mmdet - INFO - Epoch(val) [292][8]	bbox_mAP: 0.6160, bbox_mAP_50: 0.9120, bbox_mAP_75: 0.7190, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6170, bbox_mAP_l: 0.6210, bbox_mAP_copypaste: 0.616 0.912 0.719 -1.000 0.617 0.621
+2022-05-26 18:23:41,809 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:23:41,875 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.621
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.901
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.750
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.608
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.632
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.690
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.690
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.690
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.700
+
+2022-05-26 18:23:41,877 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:23:41,877 - mmdet - INFO - Epoch(val) [293][8]	bbox_mAP: 0.6210, bbox_mAP_50: 0.9010, bbox_mAP_75: 0.7500, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6080, bbox_mAP_l: 0.6320, bbox_mAP_copypaste: 0.621 0.901 0.750 -1.000 0.608 0.632
+2022-05-26 18:23:52,670 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:23:52,723 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.614
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.897
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.731
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.602
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.628
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.688
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.688
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.688
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.662
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.703
+
+2022-05-26 18:23:52,724 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:23:52,725 - mmdet - INFO - Epoch(val) [294][8]	bbox_mAP: 0.6140, bbox_mAP_50: 0.8970, bbox_mAP_75: 0.7310, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6020, bbox_mAP_l: 0.6280, bbox_mAP_copypaste: 0.614 0.897 0.731 -1.000 0.602 0.628
+2022-05-26 18:24:03,334 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:24:03,382 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.611
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.893
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.700
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.576
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.630
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.688
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.688
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.688
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.657
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.705
+
+2022-05-26 18:24:03,384 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:24:03,384 - mmdet - INFO - Epoch(val) [295][8]	bbox_mAP: 0.6110, bbox_mAP_50: 0.8930, bbox_mAP_75: 0.7000, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.5760, bbox_mAP_l: 0.6300, bbox_mAP_copypaste: 0.611 0.893 0.700 -1.000 0.576 0.630
+2022-05-26 18:24:13,506 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:24:13,546 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.616
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.901
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.722
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.614
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.678
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.678
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.678
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.662
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.687
+
+2022-05-26 18:24:13,548 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:24:13,548 - mmdet - INFO - Epoch(val) [296][8]	bbox_mAP: 0.6160, bbox_mAP_50: 0.9010, bbox_mAP_75: 0.7220, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6140, bbox_mAP_l: 0.6180, bbox_mAP_copypaste: 0.616 0.901 0.722 -1.000 0.614 0.618
+2022-05-26 18:24:24,028 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:24:24,094 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.615
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.891
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.718
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.629
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.693
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.693
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.693
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.686
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.697
+
+2022-05-26 18:24:24,096 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:24:24,096 - mmdet - INFO - Epoch(val) [297][8]	bbox_mAP: 0.6150, bbox_mAP_50: 0.8910, bbox_mAP_75: 0.7180, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.6290, bbox_mAP_l: 0.6180, bbox_mAP_copypaste: 0.615 0.891 0.718 -1.000 0.629 0.618
+2022-05-26 18:24:34,585 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:24:34,625 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.603
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.884
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.672
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.572
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.623
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.648
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.684
+
+2022-05-26 18:24:34,626 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:24:34,626 - mmdet - INFO - Epoch(val) [298][8]	bbox_mAP: 0.6030, bbox_mAP_50: 0.8840, bbox_mAP_75: 0.6720, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.5720, bbox_mAP_l: 0.6230, bbox_mAP_copypaste: 0.603 0.884 0.672 -1.000 0.572 0.623
+2022-05-26 18:24:45,182 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:24:45,252 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.599
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.891
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.696
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.594
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.607
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.676
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.676
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.676
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.679
+
+2022-05-26 18:24:45,254 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:24:45,254 - mmdet - INFO - Epoch(val) [299][8]	bbox_mAP: 0.5990, bbox_mAP_50: 0.8910, bbox_mAP_75: 0.6960, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.5940, bbox_mAP_l: 0.6070, bbox_mAP_copypaste: 0.599 0.891 0.696 -1.000 0.594 0.607
+2022-05-26 18:24:52,426 - mmdet - INFO - Saving checkpoint at 300 epochs
+2022-05-26 18:24:57,472 - mmdet - INFO - Evaluating bbox...
+2022-05-26 18:24:57,505 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.593
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.867
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.656
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.565
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.610
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.671
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.648
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.684
+
+2022-05-26 18:24:57,506 - mmdet - INFO - Exp name: yolox_s_8x8_300e_coco.py
+2022-05-26 18:24:57,507 - mmdet - INFO - Epoch(val) [300][8]	bbox_mAP: 0.5930, bbox_mAP_50: 0.8670, bbox_mAP_75: 0.6560, bbox_mAP_s: -1.0000, bbox_mAP_m: 0.5650, bbox_mAP_l: 0.6100, bbox_mAP_copypaste: 0.593 0.867 0.656 -1.000 0.565 0.610
