@@ -11,6 +11,11 @@ Pytorch 1.10.1
 # Experiments
 # Visualization
 ![image](https://user-images.githubusercontent.com/52738378/172152869-64a7f32d-ab07-449d-b5fe-f659097b53bc.png)
+![iamge](https://github.com/YUDASHUAI916/Yolo-FS/blob/main/FIgLib1.png)
+![iamge](https://github.com/YUDASHUAI916/Yolo-FS/blob/main/FIgLib2.png)
+![iamge](https://github.com/YUDASHUAI916/Yolo-FS/blob/main/Smoke100K1.png)
+![iamge](https://github.com/YUDASHUAI916/Yolo-FS/blob/main/Smoke100K2.png)
+![iamge](https://github.com/YUDASHUAI916/Yolo-FS/blob/main/Smoke100K3.png)
 
 # Acknowledgements
 We thank Carnegie Mellon University (CMU) and Pennsylvania State University (PSU) for their efforts in environmental protection. 
